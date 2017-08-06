@@ -277,7 +277,7 @@ if i>=64:
         print(playername(3),"2목을", check[2], "개 만들었습니다.")
         print(playername(4),"2목을", check[3], "개 만들었습니다.")
         if winners == 1:
-            print(playername(check.count(max(check)))+1,"이 2목을 제일 많이 만들어 이겼습니다.")
+            print(playername(check.index(max(check))+1),"이 2목을 제일 많이 만들어 이겼습니다.")
         elif winners == 4:
             print("모든 선수가 같은 갯수의 2목을 만들어 무승부 입니다")
         else:
@@ -291,7 +291,7 @@ if i>=64:
         print(playername(2),"3목을", check[1], "개 만들었습니다.")
         print(playername(3),"3목을", check[2], "개 만들었습니다.")
         if winners == 1:
-            print(playername(check.count(max(check)))+1,"이 3목을 제일 많이 만들어 이겼습니다.")
+            print(playername(check.index(max(check))+1),"이 3목을 제일 많이 만들어 이겼습니다.")
         elif winners == 3:
             print("모든 선수가 같은 갯수의 3목을 만들어 무승부 입니다")
         else:
@@ -304,6 +304,6 @@ if i>=64:
         print(playername(1),"3목을", check[0], "개 만들었습니다.")
         print(playername(2),"3목을", check[1], "개 만들었습니다.")
         if winners == 1:
-            print(playername(check.count(max(check)))+1,"이 3목을 제일 많이 만들어 이겼습니다.")
+            print(playername(check.index(max(check))+1),"이 3목을 제일 많이 만들어 이겼습니다.")
         else:
             print("모든 선수가 같은 갯수의 3목을 만들어 무승부 입니다")
