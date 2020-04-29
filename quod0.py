@@ -49,9 +49,9 @@ def playername(n):
     elif n == 4:
         colorname="노랑"
     elif n == 5:
-        colorname="초록"
+        colorname="초랑"
     elif n == 6:
-        colorname="보라"
+        colorname="보랑"
     elif n == 7:
         colorname="검정"
     return colorname
