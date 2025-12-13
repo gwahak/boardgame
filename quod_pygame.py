@@ -202,7 +202,33 @@ def draw_panel(surface, font_small, font_big, state):
         if state['winner']:
             wtxt = font_small.render(f"Winner: {PLAYER_NAME[state['winner']]}", True, (20,100,30))
             surface.blit(wtxt, (x0, y)); y += 24
-
+            
+def draw_quasar_status(surface, font_small, state):
+    if state['players'] is None: 
+        return
+    players = state['players']
+    qcap = QUASARS_BY_PLAYERS[players]
+    used = state['usedquasars']
+    
+    x0 = MARGIN + GRID_N*CELL + 16
+    y0 = MARGIN + 40 + 24*9 + 56
+    line_h = 22
+    
+    title = font_small.render("Quasars left:", True, (40,40,40))
+    surface.blit(title, (x0, y0))
+    y = y0 + line_h
+    
+    for pid in range(1, players+1):
+        remain = qcap - used[pid]
+        txt = f"{PLAYER_NAME[pid]}: {remain}/{qcap}"
+        t = font_small.render(txt, True, (50,50,60))
+        # 플레이어 색상 원
+        pygame.draw.circle(surface, PLAYER_FILL[pid], (x0+8, y+8), 6)
+        surface.blit(t, (x0+20, y))
+        if pid == 1:  # White
+            pygame.draw.circle(surface, (20, 20, 20), (x0+8, y+8), 6, 1)
+        y += line_h
+        
 def wrap_text(text, font, max_w):
     words = text.split()
     lines, cur = [], ""
