@@ -14,8 +14,20 @@ def card_str(card_id: int) -> str:
     suit = SUITS_CDHS[card_id % 4]
     rank = RANKS_CDHS[card_id // 4]
     return f"{rank}{suit}"
-
-def tokki_deal(gamenumber: int) -> List[List[int]]:
+def tokki_deal(gamenumber: int, way: str = "vertical") -> List[List[int]]:
+    """
+    way:
+      - "vertical"   : 기존 3..10 세로 slice
+      - "horizontal" : 8/8/8/7/.. right-justified 가로 삼각형
+    """
+    if way == "vertical":
+        return tokki_deal_vertical(gamenumber)
+    elif way == "horizontal":
+        return tokki_deal_horizontal(gamenumber)
+    else:
+        raise ValueError(f"Unknown tokki_deal way: {way}")
+        
+def tokki_deal_vertical(gamenumber: int) -> List[List[int]]:
     """
     TokkiCell deal:
     - 10 cascades total
@@ -47,6 +59,37 @@ def tokki_deal(gamenumber: int) -> List[List[int]]:
             idx += need
     return casc
 
+def tokki_deal_horizontal(gamenumber: int) -> List[List[int]]: 
+    """
+    TokkiCell deal:
+    - 10 cascades total
+    - casc[0] gets 1 Joker (added later as special card object)
+    - casc[1] gets 2 Jokers
+    - remaining 8 cascades receive 52 cards as 3..10 cards respectively:
+        casc[2]=3, casc[3]=4, ..., casc[9]=10  (sum=52)
+    """
+    state = gamenumber & 0xFFFFFFFF
+    deck = list(range(52))
+    wLeft = 52
+
+    # shuffle-by-deal, then we will pop in order
+    shuffled: List[int] = []
+    for _ in range(52):
+        state, r = msvc_rand_step(state)
+        j = r % wLeft
+        shuffled.append(deck[j])
+        wLeft -= 1
+        deck[j] = deck[wLeft]
+
+    casc = [[] for _ in range(10)]
+    sizes = [8,8,8,7,6,5,4,3,2,1]  # 52 cards distributed here 
+    idx = 0
+    for ci in range(10):
+        for di in range(sizes[ci]): 
+
+            casc[10-sizes[ci]+di].append(shuffled[idx])
+            idx += 1 
+    return casc
 CardStr = str
 Board = List[List[CardStr]]
 
@@ -149,8 +192,8 @@ class TokkiCellGame:
         self.deal_mode = deal_mode
         self.deal_number = deal_number
         self.easter_id = easter_id
+        self.deal_way = "horizontal"
         self.reset()
-
     def reset(self):
         self.foundations: List[List[Card]] = [[] for _ in range(4)]
         self.cascades: List[List[Card]] = [[] for _ in range(10)]
@@ -159,7 +202,7 @@ class TokkiCellGame:
             board = EASTER_DEALS[self.easter_id]
             self.cascades = [[parse_card_str(cs) for cs in col] for col in board]
         else:
-            cols = tokki_deal(self.deal_number)
+            cols = tokki_deal(self.deal_number, way=self.deal_way)
             self.cascades = [[card_from_id(cid) for cid in col] for col in cols]
 
         # place jokers: casc[0]=1, casc[1]=2
