@@ -262,7 +262,11 @@ def apply_move(board, r, c, player, flips):
         board[rr][cc] = player
 
 def board_full(board):
-    return all(board[r][c] != EMPTY for r in range(BOARD_N) for c in range(BOARD_N))
+    for r in range(BOARD_N):
+        for c in range(BOARD_N):
+            if board[r][c] == EMPTY:
+                return False
+    return True
 
 def scores_by_color(board):
     counts = {col:0 for col in COLOR_ORDER}
