@@ -521,7 +521,7 @@ class Button:
     def hit(self, pos):
         return self.rect.collidepoint(pos)
 
-def start_menu(screen, presets, default_key="2P-Classic") -> Optional[str]:
+def start_menu_1(screen, presets, default_key="2P-Classic") -> Optional[str]:
     font_big = pygame.font.SysFont("consolas", 36, bold=True)
     font = pygame.font.SysFont("consolas", 22)
     W, H = screen.get_size()
@@ -534,6 +534,102 @@ def start_menu(screen, presets, default_key="2P-Classic") -> Optional[str]:
     for k in keys:
         btns.append((k, Button((x, y, 420, 48), k)))
         y += 60
+
+    play_btn = Button((60, y + 20, 200, 52), "Play")
+    quit_btn = Button((280, y + 20, 200, 52), "Quit")
+
+    clock = pygame.time.Clock()
+    while True:
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                return None
+            if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
+                return None
+            if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
+                for k, b in btns:
+                    if b.hit(e.pos):
+                        selected = k
+                if play_btn.hit(e.pos):
+                    return selected
+                if quit_btn.hit(e.pos):
+                    return None
+
+        screen.fill((245, 246, 248))
+        screen.blit(font_big.render("Abalone (pygame)", True, (20, 20, 20)), (60, 60))
+        screen.blit(font.render(f"Mode: {selected}", True, (40, 40, 40)), (60, 110))
+
+        for k, b in btns:
+            bg = (210, 235, 210) if k == selected else (230, 230, 230)
+            b.draw(screen, font, bg=bg)
+
+        play_btn.draw(screen, font, bg=(220, 240, 255))
+        quit_btn.draw(screen, font, bg=(255, 230, 230))
+
+        hint = "Select your marbles, then click the target cell (one-step) to move/push."
+        screen.blit(font.render(hint, True, (60, 60, 60)), (60, H - 60))
+
+        pygame.display.flip()
+        clock.tick(60)
+def start_menu(screen, presets, default_key="2P-Classic") -> Optional[str]:
+    font_big = pygame.font.SysFont("consolas", 36, bold=True)
+    font = pygame.font.SysFont("consolas", 22)
+    W, H = screen.get_size()
+
+    keys = list(presets.keys())
+    selected = default_key if default_key in presets else keys[0]
+
+    # ---- group by players ----
+    by_n: Dict[int, List[str]] = {}
+    for k in keys:
+        n = int(presets[k].get("players", 2))
+        by_n.setdefault(n, []).append(k)
+
+    # keep a stable-ish order: sort by name inside each group
+    for n in by_n:
+        by_n[n].sort()
+
+    # layout params
+    x0 = 60
+    y = 150
+    row_h = 60
+
+    full_w = 420
+    full_h = 48
+
+    gap = 18
+    half_w = (full_w - gap) // 2
+
+    btns: List[Tuple[str, Button]] = []
+
+    def add_full(k: str):
+        nonlocal y
+        btns.append((k, Button((x0, y, full_w, full_h), k)))
+        y += row_h
+
+    def add_two_col(group_keys: List[str]):
+        nonlocal y
+        i = 0
+        while i < len(group_keys):
+            k1 = group_keys[i]
+            btns.append((k1, Button((x0, y, half_w, full_h), k1)))
+            i += 1
+            if i < len(group_keys):
+                k2 = group_keys[i]
+                btns.append((k2, Button((x0 + half_w + gap, y, half_w, full_h), k2)))
+                i += 1
+            y += row_h
+
+    # ---- build in a nice order ----
+    # 2P group in 2 columns if many
+    if 2 in by_n:
+        add_two_col(by_n[2])
+    # 3P / 4P / 5P as full width (usually one each)
+    for n in (3, 4, 5):
+        for k in by_n.get(n, []):
+            add_full(k)
+    # 6P group in 2 columns if many
+    if 6 in by_n:
+        add_two_col(by_n[6])
 
     play_btn = Button((60, y + 20, 200, 52), "Play")
     quit_btn = Button((280, y + 20, 200, 52), "Quit")
